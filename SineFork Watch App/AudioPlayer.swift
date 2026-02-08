@@ -57,13 +57,41 @@ class EqualTemperament: Temperament {
 final class SineWavePlayer {
     private let engine = AVAudioEngine()
     private let player = AVAudioPlayerNode()
-    private let format: AVAudioFormat
+    private lazy var format: AVAudioFormat = engine.mainMixerNode.outputFormat(forBus: 0)
 
     init() {
+        setupAudioSession()
+        NotificationCenter.default.addObserver(self, selector: #selector(handleInterruption), name: AVAudioSession.interruptionNotification, object: nil)
+        
         engine.attach(player)
-        format = engine.mainMixerNode.outputFormat(forBus: 0)
         engine.connect(player, to: engine.mainMixerNode, format: format)
         try? engine.start()
+    }
+    
+    private func setupAudioSession() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setActive(true)
+        } catch {
+            print("Failed to set up audio session: \(error)")
+        }
+    }
+    
+    @objc private func handleInterruption(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+              let type = AVAudioSession.InterruptionType(rawValue: typeValue) else {
+            return
+        }
+        if type == .ended {
+            // Reactivate the session after interruption ends
+            try? AVAudioSession.sharedInstance().setActive(true)
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     func play(frequency: Double, duration: Double, amplitude: Double = 0.5) {
