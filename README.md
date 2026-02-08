@@ -5,7 +5,7 @@ SineFork generates sine tones from your Apple Watch and has an adjustable base f
 ## Disclaimer
 
 SineFork is a hobby project to allow me getting used to Swift development. The code was proposed by AI but still heavily influenced in its design by prompting.
-Do not expect high quality code here.
+Do not expect high quality code here: At the moment, there are no tests or CI set up.
 
 ## Contributing
 This app is FLOSS. I am more than happy about any contributions.
